@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click Fit</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      animation: fadeIn 2s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .drop-zone {
+      border: 2px dashed #fff;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .drop-zone:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .number-fact {
+      margin: 20px 0;
+      font-size: 18px;
+      animation: slideIn 1s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container text-center py-5">
+    <h1 class="mb-4">🏋️ Click Fit</h1>
+    <div id="numberInfo" class="number-fact"></div>
+
+    <div class="drop-zone mt-5" id="dropZone">
+      <p>📁 Drag & drop images here or click to upload</p>
+      <input type="file" id="fileInput" hidden />
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      // Load number fact via AJAX
+      $.ajax({
+        url: "http://numbersapi.com/1/30/date?json",
+        method: "GET",
+        success: function (data) {
+          $('#numberInfo').text(data.text);
+        }
+      });
+
+      // Upload handling
+      const dropZone = $('#dropZone');
+      const fileInput = $('#fileInput');
+
+      dropZone.on('click', () => fileInput.click());
+
+      fileInput.on('change', function () {
+        uploadFile(this.files[0]);
+      });
+
+      dropZone.on('dragover', function (e) {
+        e.preventDefault();
+        dropZone.addClass('dragging');
+      });
+
+      dropZone.on('drop', function (e) {
+        e.preventDefault();
+        const file = e.originalEvent.dataTransfer.files[0];
+        uploadFile(file);
+      });
+
+      function uploadFile(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+        $.ajax({
+          url: "/upload",
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: () => alert("Image uploaded!"),
+          error: () => alert("Upload failed.")
+        });
+      }
+    });
+  </script>
+</body>
+</html>
